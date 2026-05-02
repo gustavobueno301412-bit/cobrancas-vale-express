@@ -3,27 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛵📦 VALE EXPRESS - Cobranças</title>
+    <title>🛵📦 VALE EXPRESS - Gestão de Cobranças</title>
     <style>
-        :root { --amarelo: #FFD700; --preto: #000; --card: #121212; --texto: #fff; }
+        :root { --amarelo: #FFD700; --preto: #000; --card: #121212; --texto: #fff; --vermelho: #ff4444; --verde: #25D366; }
         body { background: var(--preto); color: var(--texto); font-family: sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: auto; }
         header { text-align: center; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; margin-bottom: 20px; }
         h1 { color: var(--amarelo); letter-spacing: 3px; margin: 0; font-size: 1.8rem; }
+       
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; background: #222; color: #aaa; border: 1px solid #333; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 12px; background: #222; color: #aaa; border: 1px solid #333; cursor: pointer; border-radius: 5px; font-weight: bold; }
         .tab-btn.active { background: var(--amarelo); color: #000; border: none; }
+
         .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 20px; }
         label { display: block; color: var(--amarelo); font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; margin-top: 10px; }
-        input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; margin-bottom: 5px; }
+       
         .btn-save { width: 100%; padding: 15px; background: var(--amarelo); color: #000; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
-        .item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--amarelo); position: relative; }
-        .price { color: var(--amarelo); font-weight: bold; font-size: 1.2rem; }
-        .date-info { font-size: 0.8rem; color: #aaa; display: block; margin-top: 5px; }
+
+        .item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--amarelo); }
+        .price { color: var(--amarelo); font-weight: bold; font-size: 1.2rem; display: block; margin: 5px 0; }
+        .date-info { font-size: 0.75rem; color: #aaa; display: block; margin-top: 2px; }
+       
         .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
-        .btn-check { color: #25D366; background: none; border: none; cursor: pointer; font-weight: bold; }
-        .btn-wa-card { background: #25D366; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; font-weight: bold; display: inline-block; border: none; }
-        .total-box { text-align: right; font-size: 1.5rem; font-weight: bold; color: var(--amarelo); padding: 10px; border-top: 1px solid #333; }
+        .btn-check { background: none; border: none; color: var(--verde); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .btn-wa-card { background: var(--verde); color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: none; }
+        .btn-del { background: none; border: none; color: var(--vermelho); font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+
+        .total-box { text-align: right; font-size: 1.3rem; font-weight: bold; color: var(--amarelo); padding: 15px; border-top: 2px solid #333; margin-top: 20px; }
         #view-home, #view-hist { display: none; }
         .visible { display: block !important; }
     </style>
@@ -33,17 +40,17 @@
 <div class="container">
     <header>
         <h1>🛵📦 VALE EXPRESS</h1>
-        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">SISTEMA DE COBRANÇA DIRETA</p>
+        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">COBRANÇAS E LOGÍSTICA</p>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('home')">PENDENTES</button>
-        <button class="tab-btn" onclick="switchTab('hist')">HISTÓRICO</button>
+        <button class="tab-btn active" id="btn-home" onclick="switchTab('home')">PENDENTES</button>
+        <button class="tab-btn" id="btn-hist" onclick="switchTab('hist')">HISTÓRICO</button>
     </div>
 
     <div id="view-home" class="visible">
         <div class="card">
-            <label>Empresa</label>
+            <label>Empresa / Cliente</label>
             <input type="text" id="empresa" placeholder="Nome do Cliente">
             <label>WhatsApp</label>
             <input type="text" id="whatsapp" placeholder="Ex: 1299...">
@@ -51,59 +58,73 @@
             <input type="text" id="valor" placeholder="0,00">
             <label>Vencimento</label>
             <input type="date" id="vencimento">
-            <button class="btn-save" onclick="enviar()">Salvar e Cobrar</button>
+            <button class="btn-save" onclick="enviar()">Salvar Lançamento</button>
         </div>
+        <h3 style="color:var(--amarelo); font-size:0.9rem; text-transform: uppercase;">Aguardando Recebimento</h3>
         <div id="lista-pendentes"></div>
     </div>
 
     <div id="view-hist">
+        <h3 style="color:var(--verde); font-size:0.9rem; text-transform: uppercase;">Recebidos / Finalizados</h3>
         <div id="lista-pagos"></div>
-        <div class="total-box">Total: R$ <span id="soma-pagos">0,00</span></div>
+        <div class="total-box">Total Recebido: R$ <span id="soma-pagos">0,00</span></div>
     </div>
 </div>
 
 <script>
-    const URL_API = "SUA_URL_AQUI"; // Mantenha a sua URL do Google Apps Script
-    let todosDados = JSON.parse(localStorage.getItem('vale_express_dados')) || [];
+    // COLOQUE SUA URL DA API ABAIXO
+    const URL_API = "https://script.google.com/macros/s/AKfycby7V4HLCDZf2EdUlYp4gPHNL9ECzjK9P1al4tyFIrohOJZRl0h2QaDHSdL3COLUjAwi/exec";
+   
+    let todosDados = JSON.parse(localStorage.getItem('vale_express_v3')) || [];
 
     function switchTab(tab) {
         document.getElementById('view-home').classList.remove('visible');
         document.getElementById('view-hist').classList.remove('visible');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-home').classList.remove('active');
+        document.getElementById('btn-hist').classList.remove('active');
+       
         document.getElementById('view-' + tab).classList.add('visible');
+        document.getElementById('btn-' + tab).classList.add('active');
         renderizar();
     }
 
     function salvarLocal() {
-        localStorage.setItem('vale_express_dados', JSON.stringify(todosDados));
+        localStorage.setItem('vale_express_v3', JSON.stringify(todosDados));
     }
 
     function enviar() {
-        const empresa = document.getElementById('empresa').value;
-        const valor = document.getElementById('valor').value.replace(',', '.');
-        const whatsapp = document.getElementById('whatsapp').value;
-        const vencimento = document.getElementById('vencimento').value;
+        const emp = document.getElementById('empresa').value;
+        const valRaw = document.getElementById('valor').value.replace(',', '.');
+        const zap = document.getElementById('whatsapp').value;
+        const venc = document.getElementById('vencimento').value;
 
-        if(!empresa || !valor) return alert("Preencha os campos!");
+        if(!emp || isNaN(parseFloat(valRaw))) return alert("Preencha nome e valor corretamente!");
 
-        const novo = {
-            empresa, valor: parseFloat(valor).toFixed(2), whatsapp, vencimento,
+        const novoItem = {
+            id: Date.now(),
+            empresa: emp,
+            valor: parseFloat(valRaw).toFixed(2),
+            whatsapp: zap,
+            vencimento: venc,
             data_entrada: new Date().toLocaleDateString('pt-BR'),
-            status: "Pendente",
-            id: Date.now() // ID único para não dar erro no botão
+            data_pago: "",
+            status: "Pendente"
         };
 
-        todosDados.push(novo);
+        todosDados.push(novoItem);
         salvarLocal();
         renderizar();
-       
-        // Limpa campos
+
+        // Limpa formulário
         document.getElementById('empresa').value = "";
         document.getElementById('valor').value = "";
         document.getElementById('whatsapp').value = "";
+        document.getElementById('vencimento').value = "";
 
-        // Envia para o Google em segundo plano
-        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(novo) });
+        alert("✅ Lançamento salvo!");
+
+        // Envia para Google Sheets em background
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(novoItem) });
     }
 
     function cobrarZap(id) {
@@ -113,52 +134,105 @@
         let num = item.whatsapp.replace(/\D/g, '');
         if(!num.startsWith('55')) num = '55' + num;
 
-        const msg = `*VALE EXPRESS*%0AOlá *${item.empresa}*, lembramos do serviço de R$ ${item.valor} com vencimento em ${item.vencimento}.`;
+        const dataVencBR = item.vencimento.split('-').reverse().join('/');
+
+        // MENSAGEM PADRÃO DO SEU PRINT
+        const msg = `Olá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${item.empresa}%0A• Valor: R$ ${item.valor}%0A• Vencimento: ${dataVencBR}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
        
-        const url = `https://api.whatsapp.com/send?phone=${num}&text=${msg}`;
-       
-        // Tenta um pequeno delay para garantir que o navegador processou o clique
-        setTimeout(() => {
-            window.location.assign(url);
-        }, 100);
+        window.location.assign(`https://api.whatsapp.com/send?phone=${num}&text=${msg}`);
     }
 
     function darBaixa(id) {
         const index = todosDados.findIndex(d => d.id === id);
+        if(index === -1) return;
+       
         todosDados[index].status = "Pago";
+        todosDados[index].data_pago = new Date().toLocaleDateString('pt-BR');
+       
         salvarLocal();
         renderizar();
+
+        // Avisa a planilha
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DAR_BAIXA", id: id, empresa: todosDados[index].empresa}) });
+    }
+
+    function deletar(id) {
+        if(confirm("Deseja apagar este registro permanentemente?")) {
+            const index = todosDados.findIndex(d => d.id === id);
+            const item = todosDados[index];
+            todosDados.splice(index, 1);
+            salvarLocal();
+            renderizar();
+           
+            fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DELETAR", id: id, empresa: item.empresa}) });
+        }
     }
 
     function renderizar() {
         const pDiv = document.getElementById('lista-pendentes');
         const hDiv = document.getElementById('lista-pagos');
-        let hP = '', hH = '', soma = 0;
+        const somaSpan = document.getElementById('soma-pagos');
+       
+        let htmlP = '', htmlH = '', somaTotal = 0;
+        const hoje = new Date().toISOString().split('T')[0];
 
         todosDados.forEach(item => {
+            const dataVencBR = item.vencimento ? item.vencimento.split('-').reverse().join('/') : "---";
+           
             if(item.status === "Pendente") {
-                hP += `
-                <div class="item">
-                    <strong>${item.empresa}</strong><br>
+                const atrasado = item.vencimento && item.vencimento < hoje;
+                const cor = atrasado ? "var(--vermelho)" : "var(--amarelo)";
+                const txtStatus = atrasado ? "⚠️ ATRASADO" : "⏳ NO PRAZO";
+
+                htmlP += `
+                <div class="item" style="border-left-color: ${cor}">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <strong>${item.empresa}</strong>
+                        <span style="font-size:0.65rem; color:${cor}; font-weight:bold;">${txtStatus}</span>
+                    </div>
                     <span class="price">R$ ${item.valor}</span>
-                    <span class="date-info">Vence: ${item.vencimento}</span>
+                    <span class="date-info">📝 Cadastro: ${item.data_entrada}</span>
+                    <span class="date-info" style="color:${atrasado ? cor : '#aaa'}">📅 Vencimento: ${dataVencBR}</span>
+                   
                     <div class="actions">
-                        <button class="btn-check" onclick="darBaixa(${item.id})">✅ PAGO</button>
+                        <button class="btn-check" onclick="darBaixa(${item.id})">✅ MARCAR PAGO</button>
                         <button class="btn-wa-card" onclick="cobrarZap(${item.id})">💬 COBRAR</button>
                     </div>
                 </div>`;
             } else {
-                soma += parseFloat(item.valor);
-                hH += `<div class="item" style="border-left-color:#25D366"><strong>${item.empresa}</strong> - R$ ${item.valor}</div>`;
+                somaTotal += parseFloat(item.valor);
+                htmlH += `
+                <div class="item" style="border-left-color: var(--verde)">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${item.empresa}</strong>
+                        <button class="btn-del" onclick="deletar(${item.id})">🗑️</button>
+                    </div>
+                    <span class="price" style="color:var(--verde)">R$ ${item.valor}</span>
+                    <span class="date-info">📝 Cadastro: ${item.data_entrada}</span>
+                    <span class="date-info">📅 Vencimento original: ${dataVencBR}</span>
+                    <span class="date-info" style="color:var(--verde); font-weight:bold;">✅ Pago em: ${item.data_pago}</span>
+                </div>`;
             }
         });
 
-        pDiv.innerHTML = hP || '<p>Tudo em dia!</p>';
-        hDiv.innerHTML = hH;
-        document.getElementById('soma-pagos').innerText = soma.toFixed(2);
+        pDiv.innerHTML = htmlP || '<p style="color:#666; text-align:center;">Nenhuma cobrança pendente.</p>';
+        hDiv.innerHTML = htmlH || '<p style="color:#666; text-align:center;">Histórico vazio.</p>';
+        somaSpan.innerText = somaTotal.toFixed(2).replace('.', ',');
     }
 
-    window.onload = renderizar;
+    // Carrega dados iniciais da planilha se o local estiver vazio
+    window.onload = () => {
+        renderizar();
+        fetch(URL_API)
+            .then(res => res.json())
+            .then(dados => {
+                if(dados && dados.length > 0) {
+                    todosDados = dados;
+                    salvarLocal();
+                    renderizar();
+                }
+            }).catch(e => console.log("Offline ou erro API"));
+    };
 </script>
 </body>
 </html>

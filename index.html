@@ -92,24 +92,48 @@
 
     function enviar(tipo) {
         let valorRaw = document.getElementById('valor').value.replace(',', '.');
+        const empresaCampo = document.getElementById('empresa');
+        const whatsappCampo = document.getElementById('whatsapp');
+        const valorCampo = document.getElementById('valor');
+        const vencimentoCampo = document.getElementById('vencimento');
+
         const data = {
             tipo: tipo,
-            empresa: document.getElementById('empresa').value,
+            empresa: empresaCampo.value,
             valor: parseFloat(valorRaw).toFixed(2),
-            whatsapp: document.getElementById('whatsapp').value,
-            vencimento: document.getElementById('vencimento').value,
+            whatsapp: whatsappCampo.value,
+            vencimento: vencimentoCampo.value,
             data_entrada: new Date().toLocaleDateString('pt-BR'),
             status: "Pendente"
         };
-        if(!data.empresa || isNaN(data.valor)) return alert("Preencha os campos corretamente!");
+
+        // Validação simples
+        if(!data.empresa || isNaN(data.valor)) {
+            return alert("Preencha o nome da empresa e o valor corretamente!");
+        }
        
-        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
-            todosDados.push(data);
-            renderizar();
-            document.getElementById('valor').value = "";
-            alert("Lançamento Vale Express salvo!");
+        // 1. Manda para a planilha em segundo plano (sem travar o app)
+        fetch(URL_API, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(data)
         });
+
+        // 2. Atualiza a lista na tela NA HORA
+        todosDados.push(data);
+        renderizar();
+
+        // 3. Limpa os campos imediatamente para o próximo cadastro
+        empresaCampo.value = "";
+        valorCampo.value = "";
+        whatsappCampo.value = "";
+        vencimentoCampo.value = "";
+
+        alert("✅ Lançamento Vale Express salvo com sucesso!");
     }
+
+ 
+
 
     function renderizar() {
         const pendentesDiv = document.getElementById('lista-pendentes');
@@ -164,28 +188,34 @@
 
 
     function cobrarZap(index) {
+        // Pega os dados direto da lista atualizada
         const i = todosDados[index];
-       
-        // 1. Limpa o número e garante o 55
+        if (!i) return alert("Erro ao localizar dados da loja!");
+
         let num = i.whatsapp.replace(/\D/g, '');
         const fNum = num.startsWith('55') ? num : '55' + num;
        
-        // 2. Formata a data para não ir feia na mensagem (caso venha do banco de dados)
-        let dataVenc = i.vencimento;
+        // Formata a data para a mensagem
+        let dataVenc = i.vencimento || "---";
         if(dataVenc.includes('-')) {
             let p = dataVenc.split('-');
             dataVenc = `${p[2]}/${p[1]}/${p[0]}`;
         }
       
-        // 3. Monta a mensagem
         const msg = `*VALE EXPRESS - LOGÍSTICA*%0A%0AOlá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${i.empresa}%0A• Valor: R$ ${i.valor}%0A• Vencimento: ${dataVenc}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
       
-        // 4. A SOLUÇÃO: Usar location.href em vez de window.open
-        // Isso força o redirecionamento sem criar abas extras que travam o navegador
-        window.location.href = `https://wa.me/${fNum}?text=${msg}`;
+        const urlZap = `https://api.whatsapp.com/send?phone=${fNum}&text=${msg}`;
+
+        // Tenta abrir. Se falhar, ele usa o método alternativo
+        try {
+            window.location.assign(urlZap);
+        } catch (e) {
+            window.location.href = urlZap;
+        }
     }
 
  
+
 
 
     function darBaixa(index) {

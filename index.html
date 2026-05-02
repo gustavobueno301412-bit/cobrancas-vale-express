@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛵📦 VALE EXPRESS - Cobranças</title>
+    <style>
+        :root { --amarelo: #FFD700; --preto: #000; --card: #121212; --texto: #fff; }
+        body { background: var(--preto); color: var(--texto); font-family: sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: auto; }
+       
+        header { text-align: center; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { color: var(--amarelo); letter-spacing: 3px; margin: 0; font-size: 1.8rem; }
+       
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; background: #222; color: #aaa; border: 1px solid #333; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab-btn.active { background: var(--amarelo); color: #000; border: none; }
+
+        .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 20px; }
+        label { display: block; color: var(--amarelo); font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; margin-top: 10px; }
+        input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        .help-text { display: block; color: #777; font-size: 0.7rem; margin-top: 3px; font-style: italic; }
+
+        .btn-save { width: 100%; padding: 15px; background: var(--amarelo); color: #000; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
+
+        .item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--amarelo); position: relative; }
+        .item-info { display: flex; flex-direction: column; gap: 5px; }
+        .price { color: var(--amarelo); font-weight: bold; font-size: 1.2rem; }
+        .date-info { font-size: 0.8rem; color: #aaa; }
+       
+        .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
+        .btn-action { background: none; border: none; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; font-weight: bold; text-transform: uppercase; }
+        .btn-check { color: #25D366; }
+        .btn-del { color: #ff4444; }
+        .btn-wa-card { background: #25D366; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; font-weight: bold; }
+
+        .total-box { text-align: right; font-size: 1.5rem; font-weight: bold; color: var(--amarelo); padding: 10px; border-top: 1px solid #333; }
+        #view-home, #view-hist { display: none; }
+        .visible { display: block !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🛵📦 VALE EXPRESS</h1>
+        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">COBRANÇAS E LOGÍSTICA DE ENTREGAS</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('home', event)">PENDENTES</button>
+        <button class="tab-btn" onclick="switchTab('hist', event)">HISTÓRICO</button>
+    </div>
+
+    <div id="view-home" class="visible">
+        <div class="card">
+            <label>Empresa</label>
+            <input type="text" id="empresa" placeholder="Nome do Cliente">
+            <label>WhatsApp</label>
+            <input type="text" id="whatsapp" placeholder="Ex: 1299...">
+            <label>Valor (R$)</label>
+            <input type="text" id="valor" placeholder="0,00">
+            <label>Vencimento</label>
+            <input type="date" id="vencimento">
+            <small class="help-text">Data combinada para o pagamento.</small>
+            <button class="btn-save" onclick="enviar('LANCAMENTO')">Salvar na Planilha</button>
+        </div>
+       
+        <h3 style="color:var(--amarelo); font-size:0.9rem; text-transform: uppercase;">Aguardando Recebimento</h3>
+        <div id="lista-pendentes"></div>
+    </div>
+
+    <div id="view-hist">
+        <h3 style="color:#25D366; font-size:0.9rem; text-transform: uppercase;">Recebidos com Sucesso</h3>
+        <div id="lista-pagos"></div>
+        <div class="total-box">Total Recebido: R$ <span id="soma-pagos">0,00</span></div>
+    </div>
+</div>
+
+<script>
+    const URL_API = "https://script.google.com/macros/s/AKfycbzUjkAtWfy7VtxamFULjCYq8CM1HjTXeJuOXZ5tCvsAuwZTcS77ptgQXwSlQj1EXr4S/exec";
+    let todosDados = [];
+
+    function switchTab(tab, e) {
+        document.getElementById('view-home').classList.remove('visible');
+        document.getElementById('view-hist').classList.remove('visible');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view-' + tab).classList.add('visible');
+        e.target.classList.add('active');
+        renderizar();
+    }
+
+    function enviar(tipo) {
+        let valorRaw = document.getElementById('valor').value.replace(',', '.');
+        const data = {
+            tipo: tipo,
+            empresa: document.getElementById('empresa').value,
+            valor: parseFloat(valorRaw).toFixed(2),
+            whatsapp: document.getElementById('whatsapp').value,
+            vencimento: document.getElementById('vencimento').value,
+            data_entrada: new Date().toLocaleDateString('pt-BR'),
+            status: "Pendente"
+        };
+        if(!data.empresa || isNaN(data.valor)) return alert("Preencha os campos corretamente!");
+       
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            todosDados.push(data);
+            renderizar();
+            document.getElementById('valor').value = "";
+            alert("Lançamento Vale Express salvo!");
+        });
+    }
+
+    function renderizar() {
+        const pendentesDiv = document.getElementById('lista-pendentes');
+        const pagosDiv = document.getElementById('lista-pagos');
+        const somaPagosSpan = document.getElementById('soma-pagos');
+        let htmlP = ''; let htmlH = ''; let soma = 0;
+
+        todosDados.forEach((item, index) => {
+            if(item.status === "Pendente") {
+                htmlP += `
+                <div class="item">
+                    <div class="item-info">
+                        <strong>${item.empresa}</strong>
+                        <span class="price">R$ ${item.valor}</span>
+                        <span class="date-info">📅 Feito em: ${item.data_entrada} | 🕒 Vence em: ${item.vencimento}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-action btn-check" onclick="darBaixa(${index})">✅ MARCAR PAGO</button>
+                        <button class="btn-wa-card" onclick="cobrarZap(${index})">💬 COBRAR</button>
+                    </div>
+                </div>`;
+            } else {
+                soma += parseFloat(item.valor);
+                htmlH += `<div class="item" style="border-left-color:#25D366">
+                    <div class="item-info">
+                        <strong>${item.empresa}</strong>
+                        <span style="color:#25D366; font-weight:bold">R$ ${item.valor}</span>
+                    </div>
+                    <button class="btn-action btn-del" style="margin-top:10px" onclick="deletarReal(${index})">🗑️ APAGAR DEFINITIVO</button>
+                </div>`;
+            }
+        });
+        pendentesDiv.innerHTML = htmlP || '<p style="color:#666">Nenhum pendente no momento.</p>';
+        pagosDiv.innerHTML = htmlH;
+        somaPagosSpan.innerText = soma.toFixed(2).replace('.', ',');
+    }
+
+    function cobrarZap(index) {
+        const i = todosDados[index];
+        const num = i.whatsapp.replace(/\D/g, '');
+        const fNum = num.startsWith('55') ? num : '55' + num;
+       
+        // MENSAGEM CORTÊS E PROFISSIONAL
+        const msg = `*VALE EXPRESS - LOGÍSTICA*%0A%0AOlá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${i.empresa}%0A• Valor: R$ ${i.valor}%0A• Vencimento: ${i.vencimento}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
+       
+        window.open(`https://wa.me/${fNum}?text=${msg}`, '_blank');
+    }
+
+    function darBaixa(index) {
+        const item = todosDados[index];
+        item.status = "Pago";
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DAR_BAIXA", empresa: item.empresa, valor: item.valor}) });
+        renderizar();
+    }
+
+    function deletarReal(index) {
+        if(confirm("Deseja apagar permanentemente da planilha?")) {
+            const item = todosDados[index];
+            fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DELETAR_FINAL", empresa: item.empresa, valor: item.valor}) });
+            todosDados.splice(index, 1);
+            renderizar();
+        }
+    }
+</script>
+</body>
+</html>
+
+ 

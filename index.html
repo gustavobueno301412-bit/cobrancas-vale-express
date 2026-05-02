@@ -78,7 +78,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbxhmh432YbQyAVF9F1PgPZe1PPThVDgQ3GwBDl9jYrE8Fh0Vv-3LHSm6Z2GY88HntSM/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycby7V4HLCDZf2EdUlYp4gPHNL9ECzjK9P1al4tyFIrohOJZRl0h2QaDHSdL3COLUjAwi/exec";
     let todosDados = [];
 
     function switchTab(tab, e) {
@@ -172,7 +172,24 @@
             todosDados.splice(index, 1);
             renderizar();
         }
+        
     }
+    
+    // Esta função busca os dados da planilha assim que o app abre
+function carregarDados() {
+    fetch(URL_API)
+        .then(res => res.json())
+        .then(dados => {
+            todosDados = dados;
+            renderizar();
+        })
+        .catch(err => console.error("Erro ao puxar dados:", err));
+}
+
+// Chama a busca assim que a página termina de carregar
+window.onload = carregarDados;
+
+    
 </script>
 </body>
 </html>

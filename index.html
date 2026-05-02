@@ -8,32 +8,21 @@
         :root { --amarelo: #FFD700; --preto: #000; --card: #121212; --texto: #fff; }
         body { background: var(--preto); color: var(--texto); font-family: sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: auto; }
-       
         header { text-align: center; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; margin-bottom: 20px; }
         h1 { color: var(--amarelo); letter-spacing: 3px; margin: 0; font-size: 1.8rem; }
-       
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; background: #222; color: #aaa; border: 1px solid #333; cursor: pointer; border-radius: 5px; font-weight: bold; }
         .tab-btn.active { background: var(--amarelo); color: #000; border: none; }
-
         .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 20px; }
         label { display: block; color: var(--amarelo); font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; margin-top: 10px; }
         input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        .help-text { display: block; color: #777; font-size: 0.7rem; margin-top: 3px; font-style: italic; }
-
         .btn-save { width: 100%; padding: 15px; background: var(--amarelo); color: #000; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
-
         .item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--amarelo); position: relative; }
-        .item-info { display: flex; flex-direction: column; gap: 5px; }
         .price { color: var(--amarelo); font-weight: bold; font-size: 1.2rem; }
-        .date-info { font-size: 0.8rem; color: #aaa; }
-       
+        .date-info { font-size: 0.8rem; color: #aaa; display: block; margin-top: 5px; }
         .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
-        .btn-action { background: none; border: none; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; font-weight: bold; text-transform: uppercase; }
-        .btn-check { color: #25D366; }
-        .btn-del { color: #ff4444; }
-        .btn-wa-card { background: #25D366; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; font-weight: bold; }
-
+        .btn-check { color: #25D366; background: none; border: none; cursor: pointer; font-weight: bold; }
+        .btn-wa-card { background: #25D366; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; font-weight: bold; display: inline-block; border: none; }
         .total-box { text-align: right; font-size: 1.5rem; font-weight: bold; color: var(--amarelo); padding: 10px; border-top: 1px solid #333; }
         #view-home, #view-hist { display: none; }
         .visible { display: block !important; }
@@ -44,12 +33,12 @@
 <div class="container">
     <header>
         <h1>🛵📦 VALE EXPRESS</h1>
-        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">COBRANÇAS E LOGÍSTICA DE ENTREGAS</p>
+        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">SISTEMA DE COBRANÇA DIRETA</p>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('home', event)">PENDENTES</button>
-        <button class="tab-btn" onclick="switchTab('hist', event)">HISTÓRICO</button>
+        <button class="tab-btn active" onclick="switchTab('home')">PENDENTES</button>
+        <button class="tab-btn" onclick="switchTab('hist')">HISTÓRICO</button>
     </div>
 
     <div id="view-home" class="visible">
@@ -62,194 +51,114 @@
             <input type="text" id="valor" placeholder="0,00">
             <label>Vencimento</label>
             <input type="date" id="vencimento">
-            <small class="help-text">Data combinada para o pagamento.</small>
-            <button class="btn-save" onclick="enviar('LANCAMENTO')">Salvar na Planilha</button>
+            <button class="btn-save" onclick="enviar()">Salvar e Cobrar</button>
         </div>
-       
-        <h3 style="color:var(--amarelo); font-size:0.9rem; text-transform: uppercase;">Aguardando Recebimento</h3>
         <div id="lista-pendentes"></div>
     </div>
 
     <div id="view-hist">
-        <h3 style="color:#25D366; font-size:0.9rem; text-transform: uppercase;">Recebidos com Sucesso</h3>
         <div id="lista-pagos"></div>
-        <div class="total-box">Total Recebido: R$ <span id="soma-pagos">0,00</span></div>
+        <div class="total-box">Total: R$ <span id="soma-pagos">0,00</span></div>
     </div>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycby7V4HLCDZf2EdUlYp4gPHNL9ECzjK9P1al4tyFIrohOJZRl0h2QaDHSdL3COLUjAwi/exec";
-    let todosDados = [];
+    const URL_API = "SUA_URL_AQUI"; // Mantenha a sua URL do Google Apps Script
+    let todosDados = JSON.parse(localStorage.getItem('vale_express_dados')) || [];
 
-    function switchTab(tab, e) {
+    function switchTab(tab) {
         document.getElementById('view-home').classList.remove('visible');
         document.getElementById('view-hist').classList.remove('visible');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('view-' + tab).classList.add('visible');
-        e.target.classList.add('active');
         renderizar();
     }
 
-    function enviar(tipo) {
-        let valorRaw = document.getElementById('valor').value.replace(',', '.');
-        const empresaCampo = document.getElementById('empresa');
-        const whatsappCampo = document.getElementById('whatsapp');
-        const valorCampo = document.getElementById('valor');
-        const vencimentoCampo = document.getElementById('vencimento');
+    function salvarLocal() {
+        localStorage.setItem('vale_express_dados', JSON.stringify(todosDados));
+    }
 
-        const data = {
-            tipo: tipo,
-            empresa: empresaCampo.value,
-            valor: parseFloat(valorRaw).toFixed(2),
-            whatsapp: whatsappCampo.value,
-            vencimento: vencimentoCampo.value,
+    function enviar() {
+        const empresa = document.getElementById('empresa').value;
+        const valor = document.getElementById('valor').value.replace(',', '.');
+        const whatsapp = document.getElementById('whatsapp').value;
+        const vencimento = document.getElementById('vencimento').value;
+
+        if(!empresa || !valor) return alert("Preencha os campos!");
+
+        const novo = {
+            empresa, valor: parseFloat(valor).toFixed(2), whatsapp, vencimento,
             data_entrada: new Date().toLocaleDateString('pt-BR'),
-            status: "Pendente"
+            status: "Pendente",
+            id: Date.now() // ID único para não dar erro no botão
         };
 
-        // Validação simples
-        if(!data.empresa || isNaN(data.valor)) {
-            return alert("Preencha o nome da empresa e o valor corretamente!");
-        }
-       
-        // 1. Manda para a planilha em segundo plano (sem travar o app)
-        fetch(URL_API, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(data)
-        });
-
-        // 2. Atualiza a lista na tela NA HORA
-        todosDados.push(data);
+        todosDados.push(novo);
+        salvarLocal();
         renderizar();
+       
+        // Limpa campos
+        document.getElementById('empresa').value = "";
+        document.getElementById('valor').value = "";
+        document.getElementById('whatsapp').value = "";
 
-        // 3. Limpa os campos imediatamente para o próximo cadastro
-        empresaCampo.value = "";
-        valorCampo.value = "";
-        whatsappCampo.value = "";
-        vencimentoCampo.value = "";
-
-        alert("✅ Lançamento Vale Express salvo com sucesso!");
+        // Envia para o Google em segundo plano
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(novo) });
     }
 
- 
+    function cobrarZap(id) {
+        const item = todosDados.find(d => d.id === id);
+        if(!item) return;
 
+        let num = item.whatsapp.replace(/\D/g, '');
+        if(!num.startsWith('55')) num = '55' + num;
+
+        const msg = `*VALE EXPRESS*%0AOlá *${item.empresa}*, lembramos do serviço de R$ ${item.valor} com vencimento em ${item.vencimento}.`;
+       
+        const url = `https://api.whatsapp.com/send?phone=${num}&text=${msg}`;
+       
+        // Tenta um pequeno delay para garantir que o navegador processou o clique
+        setTimeout(() => {
+            window.location.assign(url);
+        }, 100);
+    }
+
+    function darBaixa(id) {
+        const index = todosDados.findIndex(d => d.id === id);
+        todosDados[index].status = "Pago";
+        salvarLocal();
+        renderizar();
+    }
 
     function renderizar() {
-        const pendentesDiv = document.getElementById('lista-pendentes');
-        const pagosDiv = document.getElementById('lista-pagos');
-        const somaPagosSpan = document.getElementById('soma-pagos');
-        let htmlP = ''; let htmlH = ''; let soma = 0;
+        const pDiv = document.getElementById('lista-pendentes');
+        const hDiv = document.getElementById('lista-pagos');
+        let hP = '', hH = '', soma = 0;
 
-        // Função interna para limpar a data
-        const formatarDataBR = (d) => {
-            if(!d) return "---";
-            // Se a data vier com T00:00... ou no formato YYYY-MM-DD
-            let dataLimpa = d.toString().split('T')[0];
-            if(dataLimpa.includes('-')) {
-                let p = dataLimpa.split('-');
-                return `${p[2]}/${p[1]}/${p[0]}`; // Transforma em DD/MM/YYYY
-            }
-            return d; // Retorna original se já estiver ok
-        };
-
-        todosDados.forEach((item, index) => {
+        todosDados.forEach(item => {
             if(item.status === "Pendente") {
-                htmlP += `
+                hP += `
                 <div class="item">
-                    <div class="item-info">
-                        <strong>${item.empresa}</strong>
-                        <span class="price">R$ ${item.valor}</span>
-                        <span class="date-info">📅 Feito em: ${formatarDataBR(item.data_entrada)} | 🕒 Vence em: ${formatarDataBR(item.vencimento)}</span>
-                    </div>
+                    <strong>${item.empresa}</strong><br>
+                    <span class="price">R$ ${item.valor}</span>
+                    <span class="date-info">Vence: ${item.vencimento}</span>
                     <div class="actions">
-                        <button class="btn-action btn-check" onclick="darBaixa(${index})">✅ MARCAR PAGO</button>
-                        <button class="btn-wa-card" onclick="cobrarZap(${index})">💬 COBRAR</button>
+                        <button class="btn-check" onclick="darBaixa(${item.id})">✅ PAGO</button>
+                        <button class="btn-wa-card" onclick="cobrarZap(${item.id})">💬 COBRAR</button>
                     </div>
                 </div>`;
             } else {
                 soma += parseFloat(item.valor);
-                htmlH += `<div class="item" style="border-left-color:#25D366">
-                    <div class="item-info">
-                        <strong>${item.empresa}</strong>
-                        <span style="color:#25D366; font-weight:bold">R$ ${item.valor}</span>
-                        <span class="date-info">✅ Pago em: ${formatarDataBR(item.data_pagamento || item.data_entrada)}</span>
-                    </div>
-                    <button class="btn-action btn-del" style="margin-top:10px" onclick="deletarReal(${index})">🗑️ APAGAR DEFINITIVO</button>
-                </div>`;
+                hH += `<div class="item" style="border-left-color:#25D366"><strong>${item.empresa}</strong> - R$ ${item.valor}</div>`;
             }
         });
-        pendentesDiv.innerHTML = htmlP || '<p style="color:#666">Nenhum pendente no momento.</p>';
-        pagosDiv.innerHTML = htmlH;
-        somaPagosSpan.innerText = soma.toFixed(2).replace('.', ',');
+
+        pDiv.innerHTML = hP || '<p>Tudo em dia!</p>';
+        hDiv.innerHTML = hH;
+        document.getElementById('soma-pagos').innerText = soma.toFixed(2);
     }
 
- 
-
-
-    function cobrarZap(index) {
-        // Pega os dados direto da lista atualizada
-        const i = todosDados[index];
-        if (!i) return alert("Erro ao localizar dados da loja!");
-
-        let num = i.whatsapp.replace(/\D/g, '');
-        const fNum = num.startsWith('55') ? num : '55' + num;
-       
-        // Formata a data para a mensagem
-        let dataVenc = i.vencimento || "---";
-        if(dataVenc.includes('-')) {
-            let p = dataVenc.split('-');
-            dataVenc = `${p[2]}/${p[1]}/${p[0]}`;
-        }
-      
-        const msg = `*VALE EXPRESS - LOGÍSTICA*%0A%0AOlá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${i.empresa}%0A• Valor: R$ ${i.valor}%0A• Vencimento: ${dataVenc}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
-      
-        const urlZap = `https://api.whatsapp.com/send?phone=${fNum}&text=${msg}`;
-
-        // Tenta abrir. Se falhar, ele usa o método alternativo
-        try {
-            window.location.assign(urlZap);
-        } catch (e) {
-            window.location.href = urlZap;
-        }
-    }
-
- 
-
-
-
-    function darBaixa(index) {
-        const item = todosDados[index];
-        item.status = "Pago";
-        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DAR_BAIXA", empresa: item.empresa, valor: item.valor}) });
-        renderizar();
-    }
-
-    function deletarReal(index) {
-        if(confirm("Deseja apagar permanentemente da planilha?")) {
-            const item = todosDados[index];
-            fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DELETAR_FINAL", empresa: item.empresa, valor: item.valor}) });
-            todosDados.splice(index, 1);
-            renderizar();
-        }
-        
-    }
-    
-    // Esta função busca os dados da planilha assim que o app abre
-function carregarDados() {
-    fetch(URL_API)
-        .then(res => res.json())
-        .then(dados => {
-            todosDados = dados;
-            renderizar();
-        })
-        .catch(err => console.error("Erro ao puxar dados:", err));
-}
-
-// Chama a busca assim que a página termina de carregar
-window.onload = carregarDados;
-
-    
+    window.onload = renderizar;
 </script>
 </body>
 </html>

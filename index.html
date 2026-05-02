@@ -117,6 +117,18 @@
         const somaPagosSpan = document.getElementById('soma-pagos');
         let htmlP = ''; let htmlH = ''; let soma = 0;
 
+        // Função interna para limpar a data
+        const formatarDataBR = (d) => {
+            if(!d) return "---";
+            // Se a data vier com T00:00... ou no formato YYYY-MM-DD
+            let dataLimpa = d.toString().split('T')[0];
+            if(dataLimpa.includes('-')) {
+                let p = dataLimpa.split('-');
+                return `${p[2]}/${p[1]}/${p[0]}`; // Transforma em DD/MM/YYYY
+            }
+            return d; // Retorna original se já estiver ok
+        };
+
         todosDados.forEach((item, index) => {
             if(item.status === "Pendente") {
                 htmlP += `
@@ -124,7 +136,7 @@
                     <div class="item-info">
                         <strong>${item.empresa}</strong>
                         <span class="price">R$ ${item.valor}</span>
-                        <span class="date-info">📅 Feito em: ${item.data_entrada} | 🕒 Vence em: ${item.vencimento}</span>
+                        <span class="date-info">📅 Feito em: ${formatarDataBR(item.data_entrada)} | 🕒 Vence em: ${formatarDataBR(item.vencimento)}</span>
                     </div>
                     <div class="actions">
                         <button class="btn-action btn-check" onclick="darBaixa(${index})">✅ MARCAR PAGO</button>
@@ -137,6 +149,7 @@
                     <div class="item-info">
                         <strong>${item.empresa}</strong>
                         <span style="color:#25D366; font-weight:bold">R$ ${item.valor}</span>
+                        <span class="date-info">✅ Pago em: ${formatarDataBR(item.data_pagamento || item.data_entrada)}</span>
                     </div>
                     <button class="btn-action btn-del" style="margin-top:10px" onclick="deletarReal(${index})">🗑️ APAGAR DEFINITIVO</button>
                 </div>`;
@@ -146,6 +159,9 @@
         pagosDiv.innerHTML = htmlH;
         somaPagosSpan.innerText = soma.toFixed(2).replace('.', ',');
     }
+
+ 
+
 
     function cobrarZap(index) {
         const i = todosDados[index];

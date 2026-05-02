@@ -3,148 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IAchei o Risco</title>
+    <title>🛵📦 VALE EXPRESS - Gestão de Cobranças</title>
     <style>
-        :root { --blue: #007bff; --green: #25D366; --bg: #121212; }
-        body { font-family: sans-serif; background: var(--bg); color: white; text-align: center; padding: 15px; margin: 0; }
-        .card { background: #1e1e1e; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-bottom: 15px; }
-        input { width: 95%; padding: 12px; border-radius: 8px; margin-bottom: 10px; background: #000; color: #fff; border: 1px solid #444; box-sizing: border-box; }
-        .box-camera { width: 100%; border-radius: 15px; overflow: hidden; border: 3px solid var(--blue); background: #000; height: 350px; position: relative; }
-        video, canvas { width: 100%; height: 100%; object-fit: cover; }
-        .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-analisar { background: var(--blue); color: white; }
-        .btn-whats { background: var(--green); color: white; display: none; }
-        .btn-bloqueado { background: #555 !important; cursor: not-allowed; }
-        #status { color: #ffc107; font-weight: bold; margin: 15px 0; font-size: 14px; }
-        #contador { font-size: 12px; color: #888; margin-top: 5px; }
-        #relatorio { background: white; color: #333; padding: 20px; border-radius: 12px; text-align: left; display: none; margin-top: 20px; border-left: 8px solid var(--blue); }
+        :root { --amarelo: #FFD700; --preto: #000; --card: #121212; --texto: #fff; --vermelho: #ff4444; --verde: #25D366; }
+        body { background: var(--preto); color: var(--texto); font-family: sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: auto; }
+        header { text-align: center; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { color: var(--amarelo); letter-spacing: 3px; margin: 0; font-size: 1.8rem; }
+       
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #222; color: #aaa; border: 1px solid #333; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab-btn.active { background: var(--amarelo); color: #000; border: none; }
+
+        .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 20px; }
+        label { display: block; color: var(--amarelo); font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; margin-top: 10px; }
+        input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; margin-bottom: 5px; }
+       
+        .btn-save { width: 100%; padding: 15px; background: var(--amarelo); color: #000; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
+
+        .item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--amarelo); }
+        .price { color: var(--amarelo); font-weight: bold; font-size: 1.2rem; display: block; margin: 5px 0; }
+        .date-info { font-size: 0.75rem; color: #aaa; display: block; margin-top: 2px; }
+       
+        .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
+        .btn-check { background: none; border: none; color: var(--verde); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .btn-wa-card { background: var(--verde); color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: none; }
+        .btn-del { background: none; border: none; color: var(--vermelho); font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+
+        .total-box { text-align: right; font-size: 1.3rem; font-weight: bold; color: var(--amarelo); padding: 15px; border-top: 2px solid #333; margin-top: 20px; }
+        #view-home, #view-hist { display: none; }
+        .visible { display: block !important; }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--blue);">🛡️ IAchei o Risco</h2>
-   
-    <div class="card">
-        <input type="password" id="api-key" placeholder="Cole sua Chave API aqui">
-        <input type="tel" id="zap-num" placeholder="WhatsApp do Supervisor (DDD + Número)">
-        <div id="contador">Usos realizados: 0 / 1499</div>
+<div class="container">
+    <header>
+        <h1>🛵📦 VALE EXPRESS</h1>
+        <p style="font-size: 0.7rem; color: #777; letter-spacing: 1px;">COBRANÇAS E LOGÍSTICA</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-home" onclick="switchTab('home')">PENDENTES</button>
+        <button class="tab-btn" id="btn-hist" onclick="switchTab('hist')">HISTÓRICO</button>
     </div>
 
-    <div id="status">Iniciando Câmera...</div>
-
-    <div class="box-camera">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas" style="display:none;"></canvas>
+    <div id="view-home" class="visible">
+        <div class="card">
+            <label>Empresa / Cliente</label>
+            <input type="text" id="empresa" placeholder="Nome do Cliente">
+            <label>WhatsApp</label>
+            <input type="text" id="whatsapp" placeholder="Ex: 1299...">
+            <label>Valor (R$)</label>
+            <input type="text" id="valor" placeholder="0,00">
+            <label>Vencimento</label>
+            <input type="date" id="vencimento">
+            <button class="btn-save" onclick="enviar()">Salvar Lançamento</button>
+        </div>
+        <h3 style="color:var(--amarelo); font-size:0.9rem; text-transform: uppercase;">Aguardando Recebimento</h3>
+        <div id="lista-pendentes"></div>
     </div>
 
-    <button id="btn-main" class="btn btn-analisar" onclick="executarAuditoria()">IDENTIFICAR RISCO E SOLUÇÃO</button>
-
-    <div id="relatorio">
-        <h3 style="margin:0; color:var(--blue);">📋 LAUDO TÉCNICO DE SEGURANÇA</h3>
-        <p id="conteudo-laudo" style="white-space: pre-wrap; font-size: 14px;"></p>
+    <div id="view-hist">
+        <h3 style="color:var(--verde); font-size:0.9rem; text-transform: uppercase;">Recebidos / Finalizados</h3>
+        <div id="lista-pagos"></div>
+        <div class="total-box">Total Recebido: R$ <span id="soma-pagos">0,00</span></div>
     </div>
-
-    <button id="btn-whats" class="btn btn-whats" onclick="enviarWhatsApp()">ENVIAR PARA MANUTENÇÃO</button>
+</div>
 
 <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const status = document.getElementById('status');
-    const btnMain = document.getElementById('btn-main');
-    const btnWhats = document.getElementById('btn-whats');
-    const conteudoLaudo = document.getElementById('conteudo-laudo');
-    const displayContador = document.getElementById('contador');
-    const LIMITE_MAXIMO = 1499;
+    const URL_API = "https://script.google.com/macros/s/AKfycby7V4HLCDZf2EdUlYp4gPHNL9ECzjK9P1al4tyFIrohOJZRl0h2QaDHSdL3COLUjAwi/exec";
+   
+    // Inicia com o que tem no celular ou vazio
+    let todosDados = JSON.parse(localStorage.getItem('vale_express_v3')) || [];
 
-    let usosAtuais = parseInt(localStorage.getItem('IAchei_Usos')) || 0;
-    let laudoGerado = "";
-
-    function atualizarInterface() {
-        displayContador.innerText = `Usos realizados: ${usosAtuais} / ${LIMITE_MAXIMO}`;
-        if (usosAtuais >= LIMITE_MAXIMO) {
-            btnMain.innerText = "LIMITE DIÁRIO ATINGIDO";
-            btnMain.className = "btn btn-bloqueado";
-            btnMain.disabled = true;
-            status.innerText = "❌ Limite de 1.499 auditorias atingido.";
-        }
+    function switchTab(tab) {
+        document.getElementById('view-home').classList.remove('visible');
+        document.getElementById('view-hist').classList.remove('visible');
+        document.getElementById('btn-home').classList.remove('active');
+        document.getElementById('btn-hist').classList.remove('active');
+        document.getElementById('view-' + tab).classList.add('visible');
+        document.getElementById('btn-' + tab).classList.add('active');
+        renderizar();
     }
-    atualizarInterface();
 
-    // Iniciar Câmera Traseira
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(s => { video.srcObject = s; status.innerText = "✅ Sistema Pronto"; })
-        .catch(() => { status.innerText = "❌ Erro: Ative a câmera nas configurações."; });
+    function salvarLocal() {
+        localStorage.setItem('vale_express_v3', JSON.stringify(todosDados));
+    }
 
-    async function executarAuditoria() {
-        if (usosAtuais >= LIMITE_MAXIMO) return;
+    function enviar() {
+        const emp = document.getElementById('empresa').value;
+        const valRaw = document.getElementById('valor').value.replace(',', '.');
+        const zap = document.getElementById('whatsapp').value;
+        const venc = document.getElementById('vencimento').value;
 
-        const key = document.getElementById('api-key').value.trim();
-        if(!key) return alert("Por favor, insira sua Chave API do Gemini!");
+        if(!emp || isNaN(parseFloat(valRaw))) return alert("Preencha nome e valor corretamente!");
 
-        localStorage.setItem('IAchei_Key', key);
-        localStorage.setItem('IAchei_Zap', document.getElementById('zap-num').value);
+        const novoItem = {
+            id: Date.now(),
+            empresa: emp,
+            valor: parseFloat(valRaw).toFixed(2),
+            whatsapp: zap,
+            vencimento: venc,
+            data_entrada: new Date().toLocaleDateString('pt-BR'),
+            data_pago: "",
+            status: "Pendente"
+        };
 
-        status.innerText = "🔍 ANALISANDO RISCOS E NORMAS...";
-        document.getElementById('relatorio').style.display = "none";
-        btnWhats.style.display = "none";
+        todosDados.push(novoItem);
+        salvarLocal();
+        renderizar();
 
-        try {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            const imgBase64 = canvas.toDataURL("image/jpeg", 0.3).split(',')[1];
+        document.getElementById('empresa').value = "";
+        document.getElementById('valor').value = "";
+        document.getElementById('whatsapp').value = "";
+        document.getElementById('vencimento').value = "";
 
-            // URL Oficial do Gemini 1.5 Flash
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`;
+        alert("✅ Lançamento salvo!");
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(novoItem) });
+    }
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "Aja como Auditor de Segurança do Trabalho. Identifique na imagem: 1. LOCAL, 2. RISCO DETECTADO, 3. NORMA VIOLADA (NR-10, NR-12, NR-35, etc), 4. MEDIDA CORRETIVA (O que deve ser feito para resolver). Seja técnico e direto." },
-                            { inlineData: { mimeType: "image/jpeg", data: imgBase64 } }
-                        ]
-                    }]
-                })
-            });
+    function cobrarZap(id) {
+        const item = todosDados.find(d => d.id === id);
+        if(!item) return;
+        let num = item.whatsapp.replace(/\D/g, '');
+        if(!num.startsWith('55')) num = '55' + num;
+        const dataVencBR = item.vencimento ? item.vencimento.split('-').reverse().join('/') : "---";
+        const msg = `Olá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${item.empresa}%0A• Valor: R$ ${item.valor}%0A• Vencimento: ${dataVencBR}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
+        window.location.assign(`https://api.whatsapp.com/send?phone=${num}&text=${msg}`);
+    }
 
-            const data = await response.json();
-           
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                laudoGerado = data.candidates[0].content.parts[0].text;
-               
-                // Sucesso: Soma uso e mostra laudo
-                usosAtuais++;
-                localStorage.setItem('IAchei_Usos', usosAtuais);
-                atualizarInterface();
+    function darBaixa(id) {
+        const index = todosDados.findIndex(d => d.id === id);
+        if(index === -1) return;
+        todosDados[index].status = "Pago";
+        todosDados[index].data_pago = new Date().toLocaleDateString('pt-BR');
+        salvarLocal();
+        renderizar();
+        fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DAR_BAIXA", id: id, empresa: todosDados[index].empresa}) });
+    }
 
-                conteudoLaudo.innerText = laudoGerado;
-                document.getElementById('relatorio').style.display = "block";
-                btnWhats.style.display = "block";
-                status.innerText = "✅ Auditoria Concluída";
-            } else {
-                status.innerText = "❌ Erro na Chave ou Faturamento (Veja o Console)";
-                console.log(data);
+    function deletar(id) {
+        if(confirm("Deseja apagar este registro permanentemente?")) {
+            const index = todosDados.findIndex(d => d.id === id);
+            if(index !== -1) {
+                const item = todosDados[index];
+                todosDados.splice(index, 1);
+                salvarLocal();
+                renderizar();
+                fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "DELETAR", id: id, empresa: item.empresa}) });
             }
-        } catch (e) {
-            status.innerText = "❌ Falha de Conexão. Use o GitHub HTTPS!";
-            console.error(e);
         }
     }
 
-    function enviarWhatsApp() {
-        const tel = document.getElementById('zap-num').value.replace(/\D/g, '');
-        if(!tel) return alert("Informe o número do WhatsApp!");
-        const msg = `*🛡️ IAchei o Risco - LAUDO TÉCNICO*\n\n${laudoGerado}`;
-        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+    function renderizar() {
+        const pDiv = document.getElementById('lista-pendentes');
+        const hDiv = document.getElementById('lista-pagos');
+        const somaSpan = document.getElementById('soma-pagos');
+        let htmlP = '', htmlH = '', somaTotal = 0;
+        const hoje = new Date().toISOString().split('T')[0];
+
+        todosDados.forEach(item => {
+            const dataVencBR = item.vencimento ? item.vencimento.split('-').reverse().join('/') : "---";
+            if(item.status === "Pendente") {
+                const atrasado = item.vencimento && item.vencimento < hoje;
+                const cor = atrasado ? "var(--vermelho)" : "var(--amarelo)";
+                htmlP += `<div class="item" style="border-left-color: ${cor}">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${item.empresa}</strong>
+                        <span style="font-size:0.65rem; color:${cor}; font-weight:bold;">${atrasado ? '⚠️ ATRASADO' : '⏳ NO PRAZO'}</span>
+                    </div>
+                    <span class="price">R$ ${item.valor}</span>
+                    <span class="date-info">📝 Cadastro: ${item.data_entrada}</span>
+                    <span class="date-info" style="color:${atrasado ? cor : '#aaa'}">📅 Vencimento: ${dataVencBR}</span>
+                    <div class="actions">
+                        <button class="btn-check" onclick="darBaixa(${item.id})">✅ MARCAR PAGO</button>
+                        <button class="btn-wa-card" onclick="cobrarZap(${item.id})">💬 COBRAR</button>
+                    </div>
+                </div>`;
+            } else {
+                somaTotal += parseFloat(item.valor);
+                htmlH += `<div class="item" style="border-left-color: var(--verde)">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${item.empresa}</strong>
+                        <button class="btn-del" onclick="deletar(${item.id})">🗑️</button>
+                    </div>
+                    <span class="price" style="color:var(--verde)">R$ ${item.valor}</span>
+                    <span class="date-info">📝 Cadastro: ${item.data_entrada}</span>
+                    <span class="date-info">📅 Vencimento original: ${dataVencBR}</span>
+                    <span class="date-info" style="color:var(--verde); font-weight:bold;">✅ Pago em: ${item.data_pago}</span>
+                </div>`;
+            }
+        });
+        pDiv.innerHTML = htmlP || '<p style="text-align:center;color:#666;">Nenhuma pendência.</p>';
+        hDiv.innerHTML = htmlH || '<p style="text-align:center;color:#666;">Histórico vazio.</p>';
+        somaSpan.innerText = somaTotal.toFixed(2).replace('.', ',');
     }
 
-    // Carregar dados salvos ao abrir
-    if(localStorage.getItem('IAchei_Key')) document.getElementById('api-key').value = localStorage.getItem('IAchei_Key');
-    if(localStorage.getItem('IAchei_Zap')) document.getElementById('zap-num').value = localStorage.getItem('IAchei_Zap');
+    window.onload = () => {
+        renderizar();
+        fetch(URL_API).then(res => res.json()).then(dadosWeb => {
+            if(dadosWeb && dadosWeb.length > 0) {
+                // Sincronia: só adiciona se não estiver no celular
+                dadosWeb.forEach(w => {
+                    const local = todosDados.find(l => l.id === w.id);
+                    if(!local) todosDados.push(w);
+                });
+                salvarLocal();
+                renderizar();
+            }
+        }).catch(e => console.log("Modo Offline"));
+    };
 </script>
 </body>
 </html>

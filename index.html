@@ -165,14 +165,28 @@
 
     function cobrarZap(index) {
         const i = todosDados[index];
-        const num = i.whatsapp.replace(/\D/g, '');
+       
+        // 1. Limpa o número e garante o 55
+        let num = i.whatsapp.replace(/\D/g, '');
         const fNum = num.startsWith('55') ? num : '55' + num;
        
-        // MENSAGEM CORTÊS E PROFISSIONAL
-        const msg = `*VALE EXPRESS - LOGÍSTICA*%0A%0AOlá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${i.empresa}%0A• Valor: R$ ${i.valor}%0A• Vencimento: ${i.vencimento}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
-       
-        window.open(`https://wa.me/${fNum}?text=${msg}`, '_blank');
+        // 2. Formata a data para não ir feia na mensagem (caso venha do banco de dados)
+        let dataVenc = i.vencimento;
+        if(dataVenc.includes('-')) {
+            let p = dataVenc.split('-');
+            dataVenc = `${p[2]}/${p[1]}/${p[0]}`;
+        }
+      
+        // 3. Monta a mensagem
+        const msg = `*VALE EXPRESS - LOGÍSTICA*%0A%0AOlá! Tudo bem? Estou passando para lembrar sobre o serviço realizado pela *Vale Express*:%0A%0A*Resumo do Lançamento:*%0A• Cliente: ${i.empresa}%0A• Valor: R$ ${i.valor}%0A• Vencimento: ${dataVenc}%0A%0A_Agradecemos a parceria! Qualquer dúvida, estou à disposição._`;
+      
+        // 4. A SOLUÇÃO: Usar location.href em vez de window.open
+        // Isso força o redirecionamento sem criar abas extras que travam o navegador
+        window.location.href = `https://wa.me/${fNum}?text=${msg}`;
     }
+
+ 
+
 
     function darBaixa(index) {
         const item = todosDados[index];
